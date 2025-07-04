@@ -18,10 +18,15 @@ EMOJIS = {
     "heal": "🧪",
     "boost": "💥",
     "death": "💀",
-    "empty": "⬛"
+    "empty": "⬛",
+    "rabbit": "🐰",
+    "bird": "🐦",
+    "deer": "🦌",
+    "squirrel": "🐿️"
 }
 
 TERRAINS = ["grass", "mountain", "water"]
+AMBIENT_ANIMALS = ["rabbit", "bird", "deer", "squirrel"]
 
 def create_map():
     game_map = []
@@ -498,10 +503,62 @@ def main(stdscr):
     player_hp = 20
     enemy_hp = 20
     inventory = []
+    ambient_animals = []  # List of {'type': 'rabbit', 'x': 3, 'y': 2, 'timer': 10}
+    animal_spawn_timer = 0
 
     while True:
         stdscr.clear()
         ex, ey = find_enemy(game_map)
+
+        # Handle ambient animals
+        animal_spawn_timer -= 1
+        if animal_spawn_timer <= 0 and len(ambient_animals) < 3:
+            # Spawn a new ambient animal
+            if random.random() < 0.3:  # 30% chance to spawn
+                animal_type = random.choice(AMBIENT_ANIMALS)
+                # Find a random grass spot for the animal
+                attempts = 0
+                while attempts < 20:
+                    ax, ay = random.randint(0, MAP_WIDTH-1), random.randint(0, MAP_HEIGHT-1)
+                    if (game_map[ay][ax] == "grass" and
+                        (ax, ay) != (px, py) and
+                        (ax, ay) != (ex, ey) and
+                        not any(a['x'] == ax and a['y'] == ay for a in ambient_animals)):
+                        ambient_animals.append({
+                            'type': animal_type,
+                            'x': ax,
+                            'y': ay,
+                            'timer': random.randint(8, 15),
+                            'move_counter': 0
+                        })
+                        break
+                    attempts += 1
+            animal_spawn_timer = random.randint(15, 30)
+
+        # Move and update ambient animals
+        for animal in ambient_animals[:]:
+            animal['timer'] -= 1
+            animal['move_counter'] += 1
+
+            # Move every 3-4 ticks
+            if animal['move_counter'] >= random.randint(3, 4):
+                animal['move_counter'] = 0
+                # Try to move in a random direction
+                directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+                random.shuffle(directions)
+                for dx, dy in directions:
+                    new_x, new_y = animal['x'] + dx, animal['y'] + dy
+                    if (0 <= new_x < MAP_WIDTH and 0 <= new_y < MAP_HEIGHT and
+                        game_map[new_y][new_x] == "grass" and
+                        (new_x, new_y) != (px, py) and
+                        (new_x, new_y) != (ex, ey) and
+                        not any(a['x'] == new_x and a['y'] == new_y for a in ambient_animals if a != animal)):
+                        animal['x'], animal['y'] = new_x, new_y
+                        break
+
+            # Remove if timer expired
+            if animal['timer'] <= 0:
+                ambient_animals.remove(animal)
 
         # Debug: count terrain types in map
         terrain_count = {}
@@ -517,10 +574,15 @@ def main(stdscr):
                 if x*2 >= max_x - 2:  # Leave some margin
                     break
                 try:
+                    # Check if there's an ambient animal at this position
+                    ambient_animal = next((a for a in ambient_animals if a['x'] == x and a['y'] == y), None)
+
                     if (x, y) == (px, py):
                         stdscr.addstr(y, x*2, EMOJIS["player"])
                     elif (x, y) == (ex, ey):
                         stdscr.addstr(y, x*2, EMOJIS["enemy"])
+                    elif ambient_animal:
+                        stdscr.addstr(y, x*2, EMOJIS[ambient_animal['type']])
                     elif cell in ("heal", "boost", "escape"):
                         stdscr.addstr(y, x*2, EMOJIS[cell])
                     else:
@@ -722,6 +784,8 @@ def main(stdscr):
             player_hp = 20
             enemy_hp = 20
             inventory = []
+            ambient_animals = []
+            animal_spawn_timer = 0
             continue
 
 if __name__ == "__main__":
