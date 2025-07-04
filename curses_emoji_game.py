@@ -518,7 +518,9 @@ def main(stdscr):
         if ex is not None and (px, py) == (ex, ey):
             result = battle(stdscr, player_hp, enemy_hp, inventory)
             if result is True:
-                game_map[ey][ex] = "grass"
+                # Only update if ex and ey are not None
+                if ex is not None and ey is not None:
+                    game_map[ey][ex] = "grass"
             elif result is None:
                 # Escaped: keep inventory, enemy remains
                 pass
@@ -558,7 +560,6 @@ def main(stdscr):
                 ey = max_lines // 2 - 1
                 ex = max((max_cols - 1) // 2, 0)
                 mx = max((max_cols - len(msg)) // 2, 0)
-                import time
                 for bounce in range(2):
                     stdscr.clear()
                     if bounce % 2 == 0:
@@ -595,7 +596,6 @@ def main(stdscr):
                  max_lines = curses.LINES
                  wy = max_lines // 2
                  wave = "🌊" * 8
-                 import time
                  # Animate the message moving across the screen like a wave
                  for offset in range(0, max_cols - len(chosen_msg), 4):
                      stdscr.clear()
@@ -632,7 +632,6 @@ def main(stdscr):
                 ey = max_lines // 2 - 1
                 ex = max((max_cols - 1) // 2, 0)
                 mx = max((max_cols - len(msg)) // 2, 0)
-                import time
                 if cell == "death":
                     # Dramatic cursed relic animation
                     for flicker in range(4):
