@@ -16,9 +16,9 @@ games/README.md
   pip install windows-curses
   ```
 
-### (Optional) Sound Effects
+### Required Python Packages
 
-If you want sound effects, also install pygame:
+You must install pygame:
 ```
 pip install pygame
 ```
