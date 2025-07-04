@@ -65,11 +65,11 @@ def find_enemy(game_map):
 
 def battle(stdscr, player_hp, enemy_hp, inventory):
     import time
-    # Play final.mp3 during battle
+    # Play fight_scene.mp3 during battle
     try:
         import pygame
         pygame.mixer.init()
-        pygame.mixer.music.load("final.mp3")
+        pygame.mixer.music.load("audio/fight_scene.mp3")
         pygame.mixer.music.play(-1)
     except Exception as e:
         pass
@@ -344,9 +344,9 @@ def battle(stdscr, player_hp, enemy_hp, inventory):
         ]
         # Start story music
         try:
-            print("Trying to play story music: 3-07.mp3")
+            print("Trying to play story music: story_theme.mp3")
             pygame.mixer.init()
-            pygame.mixer.music.load("3-07.mp3")
+            pygame.mixer.music.load("audio/story_theme.mp3")
             pygame.mixer.music.play(-1)
             print("Story music started.")
         except Exception as e:
@@ -391,9 +391,9 @@ def battle(stdscr, player_hp, enemy_hp, inventory):
         time.sleep(4)
         # Switch to GAME OVER music
         try:
-            print("Switching to GAME OVER music: 16.mp3")
+            print("Switching to GAME OVER music: game_over.mp3")
             pygame.mixer.music.stop()
-            pygame.mixer.music.load("16.mp3")
+            pygame.mixer.music.load("audio/game_over.mp3")
             pygame.mixer.music.play()
             print("GAME OVER music started.")
         except Exception as e:
