@@ -432,7 +432,7 @@ def main(stdscr):
     print("Game Started!")
     curses.curs_set(0)
     stdscr.nodelay(True)  # Enable non-blocking input
-    stdscr.timeout(200)  # 200ms timeout for getch
+    stdscr.timeout(50)  # 50ms timeout for getch
 
     # --- TITLE SCREEN ---
     stdscr.clear()
@@ -558,11 +558,7 @@ def main(stdscr):
             if current_time >= animal['timer']:
                 ambient_animals.remove(animal)
 
-        # Debug: count terrain types in map
-        terrain_count = {}
-        for row in game_map:
-            for cell in row:
-                terrain_count[cell] = terrain_count.get(cell, 0) + 1
+
         # Draw map
         max_y, max_x = stdscr.getmaxyx()
         for y, row in enumerate(game_map):
@@ -612,11 +608,7 @@ def main(stdscr):
                     pass
             try:
                 inv_text = f"Inventory: {' '.join([EMOJIS[i] for i in inventory]) if inventory else 'None'}"
-                debug_text = f" | Debug: {terrain_count}"
-                if len(inv_text + debug_text) < max_x - 5:
-                    stdscr.addstr(MAP_HEIGHT+2, 0, inv_text + debug_text)
-                else:
-                    stdscr.addstr(MAP_HEIGHT+2, 0, inv_text)
+                stdscr.addstr(MAP_HEIGHT+2, 0, inv_text)
             except curses.error:
                 pass
         stdscr.refresh()
@@ -636,7 +628,7 @@ def main(stdscr):
 
         key = stdscr.getch()
         if key == -1:  # No key pressed, continue loop
-            time.sleep(0.1)  # Small delay to prevent too fast updates
+            time.sleep(0.05)  # Small delay to prevent too fast updates
             continue
         if key in [ord('q'), ord('Q')]:
             break
