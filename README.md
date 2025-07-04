@@ -28,5 +28,5 @@ pip install pygame
 Navigate to the `games` directory in your terminal and run:
 
 ```
-python curses_emoji_game.py
+python the_fox_vampire.py
 ```
