@@ -28,7 +28,7 @@ def create_map():
     for y in range(MAP_HEIGHT):
         row = []
         for x in range(MAP_WIDTH):
-            terrain = random.choices(TERRAINS, weights=[0.7, 0.2, 0.1])[0]
+            terrain = random.choices(TERRAINS, weights=[0.8, 0.05, 0.15])[0]
             row.append(terrain)
         game_map.append(row)
     # Place apples
