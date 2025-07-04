@@ -1,6 +1,7 @@
 import curses
 import random
 import pygame
+import time
 
 MAP_WIDTH = 10
 MAP_HEIGHT = 6
@@ -51,8 +52,6 @@ def create_map():
             game_map[ey][ex] = "enemy"
             break
     return game_map
-
-import time
 
 def is_adjacent(px, py, ex, ey):
     return abs(px - ex) + abs(py - ey) == 1
@@ -467,7 +466,6 @@ def main(stdscr):
 
     # Wait for up to 2.5 seconds or until a key is pressed
     stdscr.nodelay(True)
-    import time
     start_time = time.time()
     while True:
         if stdscr.getch() != -1:
