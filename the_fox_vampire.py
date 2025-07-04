@@ -433,7 +433,7 @@ def main(stdscr):
     print("Game Started!")
     curses.curs_set(0)
     stdscr.nodelay(True)  # Enable non-blocking input
-    stdscr.timeout(50)  # 50ms timeout for getch
+    stdscr.timeout(100)  # 100ms timeout for getch
 
     # --- TITLE SCREEN ---
     stdscr.clear()
@@ -517,8 +517,8 @@ def main(stdscr):
 
             with animals_lock:
                 # Spawn animals
-                if current_time - last_animal_spawn >= 3.0 and len(ambient_animals) < 3:
-                    if random.random() < 0.6:
+                if current_time - last_animal_spawn >= 5.0 and len(ambient_animals) < 2:
+                    if random.random() < 0.4:
                         animal_type = random.choice(AMBIENT_ANIMALS)
                         attempts = 0
                         while attempts < 20:
@@ -563,7 +563,14 @@ def main(stdscr):
     animal_thread = threading.Thread(target=animal_update_thread, daemon=True)
     animal_thread.start()
 
+    last_screen_update = time.time()
+
     while True:
+        current_time = time.time()
+
+        # Force screen update every 500ms even without input
+        should_update = current_time - last_screen_update >= 0.5
+
         stdscr.clear()
         ex, ey = find_enemy(game_map)
 
@@ -637,7 +644,9 @@ def main(stdscr):
                 break
 
         key = stdscr.getch()
-        if key == -1:  # No key pressed, continue loop
+        if key == -1:  # No key pressed
+            if should_update:
+                last_screen_update = current_time
             time.sleep(0.05)  # Small delay to prevent too fast updates
             continue
         if key in [ord('q'), ord('Q')]:
