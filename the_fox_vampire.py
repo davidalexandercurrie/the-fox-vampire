@@ -431,7 +431,8 @@ def battle(stdscr, player_hp, enemy_hp, inventory):
 def main(stdscr):
     print("Game Started!")
     curses.curs_set(0)
-    stdscr.nodelay(False)
+    stdscr.nodelay(True)  # Enable non-blocking input
+    stdscr.timeout(200)  # 200ms timeout for getch
 
     # --- TITLE SCREEN ---
     stdscr.clear()
@@ -637,6 +638,9 @@ def main(stdscr):
                 break
 
         key = stdscr.getch()
+        if key == -1:  # No key pressed, continue loop
+            time.sleep(0.1)  # Small delay to prevent too fast updates
+            continue
         if key in [ord('q'), ord('Q')]:
             break
         dx, dy = 0, 0
