@@ -563,17 +563,12 @@ def main(stdscr):
     animal_thread = threading.Thread(target=animal_update_thread, daemon=True)
     animal_thread.start()
 
-    last_screen_update = time.time()
-
     while True:
         current_time = time.time()
 
-        # Force screen update every 500ms even without input
-        should_update = current_time - last_screen_update >= 0.5
-
+        # Always draw the screen
         stdscr.clear()
         ex, ey = find_enemy(game_map)
-
 
         # Draw map
         max_y, max_x = stdscr.getmaxyx()
@@ -643,11 +638,11 @@ def main(stdscr):
             else:
                 break
 
+        # Get input with timeout - this will return after 100ms even if no key pressed
         key = stdscr.getch()
-        if key == -1:  # No key pressed
-            if should_update:
-                last_screen_update = current_time
-            time.sleep(0.05)  # Small delay to prevent too fast updates
+
+        if key == -1:  # No key pressed, continue loop
+            time.sleep(0.1)  # Small delay
             continue
         if key in [ord('q'), ord('Q')]:
             game_running = False
