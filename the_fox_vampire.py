@@ -505,17 +505,17 @@ def main(stdscr):
     enemy_hp = 20
     inventory = []
     ambient_animals = []  # List of {'type': 'rabbit', 'x': 3, 'y': 2, 'timer': 10}
-    animal_spawn_timer = 0
+    last_animal_spawn = time.time()
 
     while True:
         stdscr.clear()
         ex, ey = find_enemy(game_map)
 
         # Handle ambient animals
-        animal_spawn_timer -= 1
-        if animal_spawn_timer <= 0 and len(ambient_animals) < 3:
+        current_time = time.time()
+        if current_time - last_animal_spawn >= 3.0 and len(ambient_animals) < 3:
             # Spawn a new ambient animal
-            if random.random() < 0.3:  # 30% chance to spawn
+            if random.random() < 0.6:  # 60% chance to spawn
                 animal_type = random.choice(AMBIENT_ANIMALS)
                 # Find a random grass spot for the animal
                 attempts = 0
@@ -534,13 +534,12 @@ def main(stdscr):
                         })
                         break
                     attempts += 1
-            animal_spawn_timer = random.randint(15, 30)
+            last_animal_spawn = current_time
 
         # Move and update ambient animals
-        current_time = time.time()
         for animal in ambient_animals[:]:
-            # Move every 0.8-1.5 seconds
-            if current_time - animal['last_move'] >= random.uniform(0.8, 1.5):
+            # Move every 1.0 seconds
+            if current_time - animal['last_move'] >= 1.0:
                 animal['last_move'] = current_time
                 # Try to move in a random direction
                 directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
@@ -787,7 +786,7 @@ def main(stdscr):
             enemy_hp = 20
             inventory = []
             ambient_animals = []
-            animal_spawn_timer = 0
+            last_animal_spawn = time.time()
             continue
 
 if __name__ == "__main__":
