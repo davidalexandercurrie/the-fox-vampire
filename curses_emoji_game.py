@@ -448,8 +448,18 @@ def main(stdscr):
     # Print VAMPIRE in red with blood/black heart emojis
     if curses.has_colors():
         curses.start_color()
-        curses.init_pair(5, curses.COLOR_RED, -1)
-        stdscr.addstr(vampire_y, vampire_x, vampire_title, curses.color_pair(5) | curses.A_BOLD)
+        # Try to use default background, fallback to COLOR_BLACK if needed
+        try:
+            curses.init_pair(5, curses.COLOR_RED, -1)
+        except curses.error:
+            try:
+                curses.init_pair(5, curses.COLOR_RED, curses.COLOR_BLACK)
+            except curses.error:
+                pass  # If still fails, just skip color
+        try:
+            stdscr.addstr(vampire_y, vampire_x, vampire_title, curses.color_pair(5) | curses.A_BOLD)
+        except curses.error:
+            stdscr.addstr(vampire_y, vampire_x, vampire_title, curses.A_BOLD)
     else:
         stdscr.addstr(vampire_y, vampire_x, vampire_title, curses.A_BOLD)
     stdscr.refresh()
