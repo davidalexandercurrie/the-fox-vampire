@@ -511,7 +511,7 @@ def main(stdscr):
                 elif cell in ("heal", "boost", "escape"):
                     stdscr.addstr(y, x*2, EMOJIS[cell])
                 else:
-                    stdscr.addstr(y, x*2, EMOJIS[cell])
+                    stdscr.addstr(y, x*2, EMOJIS.get(cell, EMOJIS["grass"]))
         # Energy color gradient: green at 15, yellow at 10-14, magenta at 5-9, red at 0-4
         if curses.has_colors():
             if energy >= 13:
@@ -641,7 +641,7 @@ def main(stdscr):
                     "boost": ("💥", "You picked up an Attack Boost!"),
                     "death": ("💀", "You picked up a Cursed Relic...")
                 }
-                emoji, msg = item_names.get(cell, (EMOJIS[cell], f"You picked up an item!"))
+                emoji, msg = item_names.get(cell, (EMOJIS.get(cell, EMOJIS["grass"]), f"You picked up an item!"))
                 stdscr.clear()
                 max_cols = curses.COLS - 1
                 max_lines = curses.LINES
