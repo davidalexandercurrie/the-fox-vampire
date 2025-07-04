@@ -1,31 +1,33 @@
 games/README.md
 # THE FOX VAMPIRE
 
-## Installation
+## Installation & Running
 
-### macOS & Linux
+### Easiest Method (Recommended)
 
-- Python 3 is required (usually pre-installed).
-- No extra steps needed for curses support.
+From the `games` directory, run:
 
-### Windows
+```
+make install
+make run
+```
+
+Or, if you prefer a shell script (macOS/Linux):
+
+```
+./install.sh
+```
+
+### Manual Method
 
 - Python 3 is required.
-- Install curses support:
+- Install dependencies:
   ```
-  pip install windows-curses
+  pip install -r requirements.txt
   ```
+- On Windows, this will also install `windows-curses` for terminal support.
 
-### Required Python Packages
-
-You must install pygame:
-```
-pip install pygame
-```
-
-## Running the Game
-
-Navigate to the `games` directory in your terminal and run:
+Run the game with:
 
 ```
 python the_fox_vampire.py
