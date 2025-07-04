@@ -18,7 +18,7 @@ EMOJIS = {
     "heal": "🧪",
     "boost": "💥",
     "death": "💀",
-    "empty": "🟩"
+    "empty": "⛰️"
 }
 
 TERRAINS = ["grass", "mountain", "water"]
