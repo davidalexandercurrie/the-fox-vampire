@@ -465,9 +465,17 @@ def main(stdscr):
     stdscr.refresh()
     time.sleep(1.1)
 
-    stdscr.addstr(vampire_y + 2, max((max_cols - 28) // 2, 0), "Press any key to begin your quest...", curses.A_DIM)
-    stdscr.refresh()
-    stdscr.getch()
+    # Wait for up to 2.5 seconds or until a key is pressed
+    stdscr.nodelay(True)
+    import time
+    start_time = time.time()
+    while True:
+        if stdscr.getch() != -1:
+            break
+        if time.time() - start_time > 2.5:
+            break
+        time.sleep(0.05)
+    stdscr.nodelay(False)
 
     # Show intro message
     stdscr.clear()
