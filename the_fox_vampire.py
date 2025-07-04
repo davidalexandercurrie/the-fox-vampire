@@ -502,6 +502,12 @@ def main(stdscr):
     while True:
         stdscr.clear()
         ex, ey = find_enemy(game_map)
+
+        # Debug: count terrain types in map
+        terrain_count = {}
+        for row in game_map:
+            for cell in row:
+                terrain_count[cell] = terrain_count.get(cell, 0) + 1
         # Draw map
         max_y, max_x = stdscr.getmaxyx()
         for y, row in enumerate(game_map):
@@ -545,7 +551,12 @@ def main(stdscr):
                 except curses.error:
                     pass
             try:
-                stdscr.addstr(MAP_HEIGHT+2, 0, f"Inventory: {' '.join([EMOJIS[i] for i in inventory]) if inventory else 'None'}")
+                inv_text = f"Inventory: {' '.join([EMOJIS[i] for i in inventory]) if inventory else 'None'}"
+                debug_text = f" | Debug: {terrain_count}"
+                if len(inv_text + debug_text) < max_x - 5:
+                    stdscr.addstr(MAP_HEIGHT+2, 0, inv_text + debug_text)
+                else:
+                    stdscr.addstr(MAP_HEIGHT+2, 0, inv_text)
             except curses.error:
                 pass
         stdscr.refresh()
