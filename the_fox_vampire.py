@@ -10,7 +10,7 @@ ENERGY_MAX = 15
 
 EMOJIS = {
     "grass": "🌳",
-    "mountain": "⛰️",
+    "mountain": "⬛",
     "water": "🌊",
     "apple": "🍏",
     "player": "🦊",
@@ -18,7 +18,7 @@ EMOJIS = {
     "heal": "🧪",
     "boost": "💥",
     "death": "💀",
-    "empty": "⛰️"
+    "empty": "⬛"
 }
 
 TERRAINS = ["grass", "mountain", "water"]
