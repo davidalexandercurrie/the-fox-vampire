@@ -503,32 +503,51 @@ def main(stdscr):
         stdscr.clear()
         ex, ey = find_enemy(game_map)
         # Draw map
+        max_y, max_x = stdscr.getmaxyx()
         for y, row in enumerate(game_map):
+            if y >= max_y - 3:  # Leave space for UI
+                break
             for x, cell in enumerate(row):
-                if (x, y) == (px, py):
-                    stdscr.addstr(y, x*2, EMOJIS["player"])
-                elif (x, y) == (ex, ey):
-                    stdscr.addstr(y, x*2, EMOJIS["enemy"])
-                elif cell in ("heal", "boost", "escape"):
-                    stdscr.addstr(y, x*2, EMOJIS[cell])
-                else:
-                    stdscr.addstr(y, x*2, EMOJIS.get(cell, EMOJIS["empty"]))
+                if x*2 >= max_x - 2:  # Leave some margin
+                    break
+                try:
+                    if (x, y) == (px, py):
+                        stdscr.addstr(y, x*2, EMOJIS["player"])
+                    elif (x, y) == (ex, ey):
+                        stdscr.addstr(y, x*2, EMOJIS["enemy"])
+                    elif cell in ("heal", "boost", "escape"):
+                        stdscr.addstr(y, x*2, EMOJIS[cell])
+                    else:
+                        stdscr.addstr(y, x*2, EMOJIS.get(cell, EMOJIS["empty"]))
+                except curses.error:
+                    pass
         # Energy color gradient: green at 15, yellow at 10-14, magenta at 5-9, red at 0-4
-        if curses.has_colors():
-            if energy >= 13:
-                color = curses.color_pair(1)  # Green
-            elif energy >= 10:
-                color = curses.color_pair(2)  # Yellow
-            elif energy >= 5:
-                color = curses.color_pair(3)  # Magenta
+        max_y, max_x = stdscr.getmaxyx()
+        if MAP_HEIGHT+2 < max_y and max_x > 50:  # Only draw UI if there's enough space
+            if curses.has_colors():
+                if energy >= 13:
+                    color = curses.color_pair(1)  # Green
+                elif energy >= 10:
+                    color = curses.color_pair(2)  # Yellow
+                elif energy >= 5:
+                    color = curses.color_pair(3)  # Magenta
+                else:
+                    color = curses.color_pair(4)  # Red
+                try:
+                    stdscr.addstr(MAP_HEIGHT+1, 0, "Energy: ", curses.A_BOLD)
+                    stdscr.addstr(f"{energy}", color | curses.A_BOLD)
+                    stdscr.addstr(f"/{ENERGY_MAX}   (WASD to move, Q to quit)")
+                except curses.error:
+                    pass
             else:
-                color = curses.color_pair(4)  # Red
-            stdscr.addstr(MAP_HEIGHT+1, 0, "Energy: ", curses.A_BOLD)
-            stdscr.addstr(f"{energy}", color | curses.A_BOLD)
-            stdscr.addstr(f"/{ENERGY_MAX}   (WASD to move, Q to quit)")
-        else:
-            stdscr.addstr(MAP_HEIGHT+1, 0, f"Energy: {energy}/{ENERGY_MAX}   (WASD to move, Q to quit)")
-        stdscr.addstr(MAP_HEIGHT+2, 0, f"Inventory: {' '.join([EMOJIS[i] for i in inventory]) if inventory else 'None'}")
+                try:
+                    stdscr.addstr(MAP_HEIGHT+1, 0, f"Energy: {energy}/{ENERGY_MAX}   (WASD to move, Q to quit)")
+                except curses.error:
+                    pass
+            try:
+                stdscr.addstr(MAP_HEIGHT+2, 0, f"Inventory: {' '.join([EMOJIS[i] for i in inventory]) if inventory else 'None'}")
+            except curses.error:
+                pass
         stdscr.refresh()
 
         # Check for battle trigger: only when player moves onto the bear's square
