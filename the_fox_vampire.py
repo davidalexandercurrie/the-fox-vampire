@@ -2,7 +2,6 @@ import curses
 import random
 import pygame
 import time
-import threading
 
 MAP_WIDTH = 10
 MAP_HEIGHT = 6
@@ -432,7 +431,7 @@ def battle(stdscr, player_hp, enemy_hp, inventory):
 def main(stdscr):
     print("Game Started!")
     curses.curs_set(0)
-    stdscr.nodelay(True)  # Enable non-blocking input
+    stdscr.nodelay(False)
 
     # --- TITLE SCREEN ---
     stdscr.clear()
@@ -504,70 +503,55 @@ def main(stdscr):
     player_hp = 20
     enemy_hp = 20
     inventory = []
-    ambient_animals = []  # List of {'type': 'rabbit', 'x': 3, 'y': 2, 'timer': 10}
-    last_animal_spawn = time.time()
-    animals_lock = threading.Lock()
-    game_running = True
-
-    def animal_update_thread():
-        nonlocal ambient_animals, last_animal_spawn, game_running
-        while game_running:
-            current_time = time.time()
-
-            with animals_lock:
-                # Spawn animals
-                if current_time - last_animal_spawn >= 5.0 and len(ambient_animals) < 2:
-                    if random.random() < 0.4:
-                        animal_type = random.choice(AMBIENT_ANIMALS)
-                        attempts = 0
-                        while attempts < 20:
-                            ax, ay = random.randint(0, MAP_WIDTH-1), random.randint(0, MAP_HEIGHT-1)
-                            if (game_map[ay][ax] == "grass" and
-                                (ax, ay) != (px, py) and
-                                (ax, ay) != (ex, ey) and
-                                not any(a['x'] == ax and a['y'] == ay for a in ambient_animals)):
-                                ambient_animals.append({
-                                    'type': animal_type,
-                                    'x': ax,
-                                    'y': ay,
-                                    'timer': time.time() + random.randint(5, 10),
-                                    'last_move': time.time()
-                                })
-                                break
-                            attempts += 1
-                        last_animal_spawn = current_time
-
-                # Move and update animals
-                for animal in ambient_animals[:]:
-                    if current_time - animal['last_move'] >= 1.0:
-                        animal['last_move'] = current_time
-                        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-                        random.shuffle(directions)
-                        for dx, dy in directions:
-                            new_x, new_y = animal['x'] + dx, animal['y'] + dy
-                            if (0 <= new_x < MAP_WIDTH and 0 <= new_y < MAP_HEIGHT and
-                                game_map[new_y][new_x] == "grass" and
-                                (new_x, new_y) != (px, py) and
-                                (new_x, new_y) != (ex, ey) and
-                                not any(a['x'] == new_x and a['y'] == new_y for a in ambient_animals if a != animal)):
-                                animal['x'], animal['y'] = new_x, new_y
-                                break
-
-                    if current_time >= animal['timer']:
-                        ambient_animals.remove(animal)
-
-            time.sleep(0.1)
-
-    # Start the animal thread
-    animal_thread = threading.Thread(target=animal_update_thread, daemon=True)
-    animal_thread.start()
+    ambient_animals = []
+    animal_spawn_counter = 0
 
     while True:
-        current_time = time.time()
-
-        # Always draw the screen
         stdscr.clear()
         ex, ey = find_enemy(game_map)
+
+        # Handle ambient animals when player moves
+        animal_spawn_counter += 1
+        if animal_spawn_counter >= 8 and len(ambient_animals) < 2:
+            if random.random() < 0.3:
+                animal_type = random.choice(AMBIENT_ANIMALS)
+                attempts = 0
+                while attempts < 20:
+                    ax, ay = random.randint(0, MAP_WIDTH-1), random.randint(0, MAP_HEIGHT-1)
+                    if (game_map[ay][ax] == "grass" and
+                        (ax, ay) != (px, py) and
+                        (ax, ay) != (ex, ey) and
+                        not any(a['x'] == ax and a['y'] == ay for a in ambient_animals)):
+                        ambient_animals.append({
+                            'type': animal_type,
+                            'x': ax,
+                            'y': ay,
+                            'timer': random.randint(10, 20)
+                        })
+                        break
+                    attempts += 1
+            animal_spawn_counter = 0
+
+        # Move and update ambient animals
+        for animal in ambient_animals[:]:
+            animal['timer'] -= 1
+            # Move animal occasionally
+            if random.random() < 0.4:
+                directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+                random.shuffle(directions)
+                for dx, dy in directions:
+                    new_x, new_y = animal['x'] + dx, animal['y'] + dy
+                    if (0 <= new_x < MAP_WIDTH and 0 <= new_y < MAP_HEIGHT and
+                        game_map[new_y][new_x] == "grass" and
+                        (new_x, new_y) != (px, py) and
+                        (new_x, new_y) != (ex, ey) and
+                        not any(a['x'] == new_x and a['y'] == new_y for a in ambient_animals if a != animal)):
+                        animal['x'], animal['y'] = new_x, new_y
+                        break
+
+            # Remove if timer expired
+            if animal['timer'] <= 0:
+                ambient_animals.remove(animal)
 
         # Draw map
         max_y, max_x = stdscr.getmaxyx()
@@ -579,8 +563,7 @@ def main(stdscr):
                     break
                 try:
                     # Check if there's an ambient animal at this position
-                    with animals_lock:
-                        ambient_animal = next((a for a in ambient_animals if a['x'] == x and a['y'] == y), None)
+                    ambient_animal = next((a for a in ambient_animals if a['x'] == x and a['y'] == y), None)
 
                     if (x, y) == (px, py):
                         stdscr.addstr(y, x*2, EMOJIS["player"])
@@ -637,15 +620,9 @@ def main(stdscr):
             else:
                 break
 
-        # Check for input without blocking
         key = stdscr.getch()
-
         if key in [ord('q'), ord('Q')]:
-            game_running = False
             break
-        elif key == -1:  # No key pressed
-            time.sleep(0.2)  # Regular update interval
-            continue
         dx, dy = 0, 0
         valid_move = False
         if key in [ord('w'), ord('W')]:
@@ -791,13 +768,9 @@ def main(stdscr):
             player_hp = 20
             enemy_hp = 20
             inventory = []
-            with animals_lock:
-                ambient_animals = []
-            last_animal_spawn = time.time()
+            ambient_animals = []
+            animal_spawn_counter = 0
             continue
-
-    # Clean up when exiting
-    game_running = False
 
 if __name__ == "__main__":
     curses.wrapper(main)
