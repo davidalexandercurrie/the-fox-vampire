@@ -433,7 +433,6 @@ def main(stdscr):
     print("Game Started!")
     curses.curs_set(0)
     stdscr.nodelay(True)  # Enable non-blocking input
-    stdscr.timeout(100)  # 100ms timeout for getch
 
     # --- TITLE SCREEN ---
     stdscr.clear()
@@ -638,15 +637,15 @@ def main(stdscr):
             else:
                 break
 
-        # Get input with timeout - this will return after 100ms even if no key pressed
+        # Check for input without blocking
         key = stdscr.getch()
 
-        if key == -1:  # No key pressed, continue loop
-            time.sleep(0.1)  # Small delay
-            continue
         if key in [ord('q'), ord('Q')]:
             game_running = False
             break
+        elif key == -1:  # No key pressed
+            time.sleep(0.2)  # Regular update interval
+            continue
         dx, dy = 0, 0
         valid_move = False
         if key in [ord('w'), ord('W')]:
