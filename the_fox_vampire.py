@@ -529,21 +529,19 @@ def main(stdscr):
                             'type': animal_type,
                             'x': ax,
                             'y': ay,
-                            'timer': random.randint(8, 15),
-                            'move_counter': 0
+                            'timer': time.time() + random.randint(5, 10),
+                            'last_move': time.time()
                         })
                         break
                     attempts += 1
             animal_spawn_timer = random.randint(15, 30)
 
         # Move and update ambient animals
+        current_time = time.time()
         for animal in ambient_animals[:]:
-            animal['timer'] -= 1
-            animal['move_counter'] += 1
-
-            # Move every 3-4 ticks
-            if animal['move_counter'] >= random.randint(3, 4):
-                animal['move_counter'] = 0
+            # Move every 0.8-1.5 seconds
+            if current_time - animal['last_move'] >= random.uniform(0.8, 1.5):
+                animal['last_move'] = current_time
                 # Try to move in a random direction
                 directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
                 random.shuffle(directions)
@@ -558,7 +556,7 @@ def main(stdscr):
                         break
 
             # Remove if timer expired
-            if animal['timer'] <= 0:
+            if current_time >= animal['timer']:
                 ambient_animals.remove(animal)
 
         # Debug: count terrain types in map
